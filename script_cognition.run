@@ -1,0 +1,425 @@
+///////////////// kamoPhonMBEA 13 June, 2021
+
+var timeline = [] ;
+
+
+//preload
+
+var audio = ['audio/mbea-scale_01.mp3', 'audio/mbea-scale_02.mp3', 'audio/mbea-scale_03.mp3','audio/mbea-scale_04.mp3','audio/mbea-scale_05.mp3','audio/mbea-scale_06.mp3','audio/mbea-scale_07.mp3','audio/mbea-scale_08.mp3','audio/mbea-scale_09.mp3','audio/mbea-scale_10.mp3','audio/mbea-scale_11.mp3','audio/mbea-scale_12.mp3','audio/mbea-scale_13.mp3','audio/mbea-scale_14.mp3','audio/mbea-scale_15.mp3','audio/mbea-scale_16.mp3','audio/mbea-scale_17.mp3','audio/mbea-scale_18.mp3','audio/mbea-scale_19.mp3','audio/mbea-scale_20.mp3','audio/mbea-scale_21.mp3','audio/mbea-scale_22.mp3','audio/mbea-scale_23.mp3','audio/mbea-scale_24.mp3','audio/mbea-scale_25.mp3','audio/mbea-scale_26.mp3','audio/mbea-scale_27.mp3','audio/mbea-scale_28.mp3','audio/mbea-scale_29.mp3','audio/mbea-scale_30.mp3','audio/mbea-scale_31.mp3',];
+
+var preload = {
+    type: 'preload',
+    auto_preload: true,
+    audio: audio,
+};
+
+
+
+//browser check
+var check_browser = {
+    type: 'image-button-response',
+    stimulus: 'img/browser2.jpg',
+    choices: ['OK'],
+    on_finish: function(data){
+          if(data.response == 1){
+          　window.close();
+          }
+    }
+};
+
+timeline.push(check_browser);
+
+
+// PC, headphone check
+timeline.push({
+  type: "html-button-response",
+  stimulus: "<p>本実験では、ピアノの音を聞きます。</p>"+
+  "<p>静かな環境で、パソコンとイヤホンまたはヘッドホンを使って参加してください。</p>",
+  choices: ['OK'],
+  response_ends_trial: true,
+});
+
+
+//fullscreen
+var fullscreen = {
+  type: 'fullscreen',
+  fullscreen_mode: false
+};
+timeline.push(fullscreen)
+
+/////// Greeting
+timeline.push({
+  type: "html-button-response",
+  stimulus: "<p>この度は実験に協力していただき、ありがとうございます。</p>" + 
+  "<p>この実験ではピアノのメロディーを2回聞いてもらい、その2つのメロディーが同じであったか違っていたかを答えてもらいます。</p>" +
+  "<p>実験は練習セッションを含めて、大体10分程度かかります。</p>" +
+  "<p>実験の後に簡単なアンケート (2-3分) があります。</p>",
+  choices: ['OK'],
+  response_ends_trial: true,
+});
+
+/////// Ask name. This part will be removed in the real experiment, as an ID will be assigned to a participant.
+var form_name = {
+  type: 'survey-html-form',
+  preamble: "<p>お名前を教えてください。</p>" +
+  "<p>実験後のアンケートでもお名前を伺いますので、その時にも同じ様にご記入ください。</p>" +
+  "<p>※アルファベットで記入してください (例：daiki)</p>",
+  html: '<p> <input name="first" type="text" />',
+};
+
+timeline.push(form_name);
+
+/////// Practice. This part will be made up by Fanfanpharmacy.......
+
+var instruction = {
+  type: 'html-button-response',
+  stimulus: "<p>ではまず音量を確認しましょう。</p>"+
+  "<p>今から音が再生されるので、はっきり聞こえるよう音量を調整してください。</p>",
+  margin_vertical: '10px',
+  choices: ['OK'],
+};
+  
+timeline.push(instruction);
+/*音量調整*/
+
+var volumetest = {
+  type: 'audio-button-response',
+  stimulus: "sound/pianolong.mp3",
+  choices:['はい、音量は大丈夫です'],
+  prompt: "<p>ピアノの音楽ははっきり聞こえていますか。</p>"+
+    "<p>はっきり聞こえない場合は音量をあげてください。</p>",
+  response_allowed_while_playing: true,
+};
+timeline.push(volumetest);
+
+
+var test_ok = {
+  type: 'html-button-response',
+  choices: ['OK'],
+  margin_vertical: '20px',　
+  stimulus: "<p>ありがとうございました。まず実験の練習セッションを行います。</p>"+
+      "<p>2つのメロディーが同じだと思ったら[同じ]をクリックしてください。</p>" +
+      "<p>2つのメロディーが違うと思ったら[違う]をクリックしてください。</p>"　+
+      "ではやってみましょう！"
+};
+
+timeline.push(test_ok);
+  
+/*practice: same vs. very different*/
+
+  timeline.push({
+    type: 'audio-button-response',
+    stimulus: 'sound/Ex1_mbea-scale.mp3',
+    prompt: "",
+    choices: ['<h3>同じ</h3>', '<h3>違う</h3>'],
+    margin_horizontal: '30px',
+    response_allowed_while_playing: true,
+    on_finish: function(data){
+          if(data.response == 1){
+          　data.correct = true;
+          } else {
+            data.correct = false;
+            }
+          console.log('The trial is over! Here is all the data: '+JSON.stringify(data));
+
+    }
+  })
+  
+    timeline.push({
+      type: 'html-button-response',
+      choices: ['次の練習問題に進む'],
+      stimulus: function(){
+        let last_trial_correct = jsPsych.data.get().last(1).values()[0].correct;
+          if (last_trial_correct) {
+          return "<p>よくできました! 2つのメロディは違いましたね。</p>";
+       } else {
+          return "<p>残念でした。2つのメロディは違いました。</p>";
+       }
+   }
+  });
+
+
+  timeline.push({
+    type: 'audio-button-response',
+    stimulus: 'sound/Ex2_mbea-scale.mp3',
+    prompt: "",
+    choices: ['<h3>同じ</h3>', '<h3>違う</h3>'],
+    margin_horizontal: '30px',
+    response_allowed_while_playing: true,
+    on_finish: function(data){
+          if(data.response == 0){
+          　data.correct = true;
+          } else {
+            data.correct = false;
+            }
+          console.log('The trial is over! Here is all the data: '+JSON.stringify(data));
+
+    }
+  })
+  
+    timeline.push({
+      type: 'html-button-response',
+      choices: ['次の練習問題に進む'],
+      stimulus: function(){
+        let last_trial_correct = jsPsych.data.get().last(1).values()[0].correct;
+          if (last_trial_correct) {
+          return "<p>よくできました! 2つのメロディはまったく同じでしたね。</p>";
+       } else {
+          return "<p>残念でした。2つのメロディはまったく同じでした。</p>";
+       }
+   }
+  });
+  
+//random
+
+var practice_instruction = {
+  type: 'html-button-response',
+  stimulus: '<p>ありがとうございました。では本番に入りましょう。</p>',
+  choices: ['OK'],
+  prompt: "<p></p>"
+};
+  
+timeline.push(practice_instruction);
+
+
+/////// Main experiment
+// instruction
+var instructions = {
+  type: "html-button-response",
+  stimulus:"<p>それでは、これから本番の実験です。</p>" + 
+      "<p>今行っていただいた練習と同様に、ピアノのメロディーが2回流れます。</p>" +
+      "<p>2つのメロディーが同じだと思ったら[同じ]をクリックしてください。</p>" +
+      "<p>2つのメロディーが違うと思ったら[違う]をクリックしてください。</p>"　+
+      "<p>全部で31回あり、10分程度で終わるはずです </p>",
+  choices: ['OK'],
+  response_ends_trial: true,
+};
+
+timeline.push(instructions);
+
+var instructions = {
+  type: "html-button-response",
+  stimulus:"<p>それでは、これからはじめます。</p>",
+  choices: ['OK'],
+  response_ends_trial: true,
+};
+
+timeline.push(instructions);
+
+// stimuli
+
+var stimuli = [
+  {
+    stimulus: "mbea-scale_01.mp3",
+    data:{no:'1', type:'same', correct_button:0}
+  },
+  
+   {
+    stimulus: "mbea-scale_02.mp3",
+    data:{no:'2', type:'different', correct_button:1}
+  },
+  
+    {
+    stimulus: "mbea-scale_03.mp3",
+    data:{no:'3', type:'same', correct_button:0}
+  },
+  
+    {
+    stimulus: "mbea-scale_04.mp3",
+    data:{no:'4', type:'same', correct_button:0}
+  },
+  
+     {
+    stimulus: "mbea-scale_05.mp3",
+    data:{no:'5', type:'same', correct_button:0}
+  },
+  
+    {
+    stimulus: "mbea-scale_06.mp3",
+    data:{no:'6', type:'different', correct_button:1}
+  },
+  
+    {
+    stimulus: "mbea-scale_07.mp3",
+    data:{no:'7', type:'different', correct_button:1}
+  },
+  
+    {
+    stimulus: "mbea-scale_08.mp3",
+    data:{no:'8', type:'different', correct_button:1}
+  },
+  
+    {
+    stimulus: "mbea-scale_09.mp3",
+    data:{no:'9', type:'different', correct_button:1}
+  },
+  
+    {
+    stimulus: "mbea-scale_10.mp3",
+    data:{no:'10', type:'same', correct_button:0}
+  },
+  
+      {
+    stimulus: "mbea-scale_11.mp3",
+    data:{no:'11', type:'different', correct_button:1}
+  },
+  
+      {
+    stimulus: "mbea-scale_12.mp3",
+    data:{no:'12', type:'different', correct_button:1}
+  },
+  
+      {
+    stimulus: "mbea-scale_13.mp3",
+    data:{no:'13', type:'same', correct_button:0}
+  },
+  
+      {
+    stimulus: "mbea-scale_14.mp3",
+    data:{no:'14', type:'different', correct_button:1}
+  },
+  
+      {
+    stimulus: "mbea-scale_15.mp3",
+    data:{no:'15', type:'same', correct_button:0}
+  },
+  
+      {
+    stimulus: "mbea-scale_16.mp3",
+    data:{no:'16', type:'same', correct_button:0}
+  },
+  
+      {
+    stimulus: "mbea-scale_17.mp3",
+    data:{no:'17', type:'different', correct_button:1}
+  },
+  
+      {
+    stimulus: "mbea-scale_18.mp3",
+    data:{no:'18', type:'same', correct_button:0}
+  },
+  
+      {
+    stimulus: "mbea-scale_19.mp3",
+    data:{no:'19', type:'different', correct_button:1}
+  },
+  
+  
+      {
+    stimulus: "mbea-scale_20.mp3",
+    data:{no:'20', type:'same', correct_button:0}
+  },
+  
+      {
+    stimulus: "mbea-scale_21.mp3",
+    data:{no:'21', type:'same', correct_button:0}
+  },
+  
+      {
+    stimulus: "mbea-scale_22.mp3",
+    data:{no:'22', type:'same', correct_button:0}
+  },
+  
+      {
+    stimulus: "mbea-scale_23.mp3",
+    data:{no:'23', type:'different', correct_button:1}
+  },
+  
+      {
+    stimulus: "mbea-scale_24.mp3",
+    data:{no:'24', type:'different', correct_button:1}
+  },
+  
+      {
+    stimulus: "mbea-scale_25.mp3",
+    data:{no:'25', type:'same', correct_button:0}
+  },
+  
+      {
+    stimulus: "mbea-scale_26.mp3",
+    data:{no:'26', type:'different', correct_button:1}
+  },
+  
+      {
+    stimulus: "mbea-scale_27.mp3",
+    data:{no:'27', type:'different', correct_button:1}
+  },
+
+      {
+    stimulus: "mbea-scale_28.mp3",
+    data:{no:'28', type:'different', correct_button:1}
+  },
+  
+      {
+    stimulus: "mbea-scale_29.mp3",
+    data:{no:'29', type:'different', correct_button:1}
+  },
+  
+      {
+    stimulus: "mbea-scale_30.mp3",
+    data:{no:'30', type:'same', correct_button:0}
+  },
+  
+      {
+    stimulus: "mbea-scale_31.mp3",
+    data:{no:'31', type:'same', correct_button:0}
+  }
+  
+  ];
+
+
+var stroop = {
+  timeline: [{
+    type: 'audio-button-response',
+    stimulus: jsPsych.timelineVariable('stimulus'),
+    choices: ['<h3>同じ</h3>', '<h3>違う</h3>'],
+    margin_horizontal: '30px',
+    prompt: "<p>この2つのメロディーは同じですか</p>",
+    data: jsPsych.timelineVariable('data'),
+    response_allowed_while_playing: true,
+         on_finish: function(data){
+          var correct = 0;
+          if(data.correct_button == data.response){
+          　correct = 1;
+          }
+          data.correct = correct
+         },
+    post_trial_gap: function() {
+        return Math.floor(Math.random() * 1500) + 500;
+    }
+  }],
+  timeline_variables: stimuli,
+}
+
+/*
+var response = {
+  timeline: [{
+      type: 'html-button-response',
+      stimulus: "<p>ありがとうございました。</p>" +
+      "<p>NEXTを押して次のメロディーを聞いてください。</p>",
+      choices: ['NEXT'],
+      response_ends_trial: true,
+  }]
+}
+*/  
+timeline.push(stroop);
+
+
+
+/////// End the experiment and proceed to the questionnaire.
+timeline.push({
+    type: 'html-button-response',
+    stimulus: '<p>これで実験終了です。ご協力いただきありがとうございました。</p>'+
+    '<p>最後に簡単なアンケート (2-3分) にご回答ください。</p>',
+    choices: ['アンケートへ進む'],
+    response_ends_trial: true,
+});
+
+jsPsych.init({
+    timeline: timeline,
+    show_progress_bar: true,
+    message_progress_bar: '実験終了まで',
+    on_finish: function(data){
+      console.log('end of the experiment');
+      window.location.href = "www.google.com"}
+});
